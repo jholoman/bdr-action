@@ -1,6 +1,6 @@
 Introduction
 ===========
-This program allows for programmatic execution of previously scheduled BDR jobs. It has three basic functions:
+This utility allows for programmatic execution of previously scheduled BDR jobs. It has three basic functions:
 ```
 1) List BDR job schedule (and history). This is primarily in place to determine the schedule ID of the BDR job.
 2) Run BDR job schedules. 
