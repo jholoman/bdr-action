@@ -43,6 +43,7 @@ Command Arguments:
    GenerateCredentials /path/to/credentials_file/
    List /path/to/credentials/
 ```
+Example job.properties and workflow.xml are in the workflow directory. 
 
 To build, install Maven and run the following, which creates a jar file with all dependencies included in it:
 ```
