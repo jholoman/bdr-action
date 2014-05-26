@@ -1,0 +1,27 @@
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="bdr-action">
+    <start to="execute-bdr-action"/>
+    <action name="execute-bdr-action">
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <configuration>
+                <property>
+                    <name>mapred.job.queue.name</name>
+                    <value>${queueName}</value>
+                </property>
+            </configuration>
+            <main-class>com.cloudera.manager.client.ScheduleLauncher</main-class>
+            <java-opts>-DlogLevel=${logLevel}</java-opts>
+            <arg>Run</arg>
+            <arg>${scheduleId}</arg>
+            <arg>${dryRun}</arg>
+            <arg>${path}</arg>
+        </java>
+        <ok to="end"/>
+        <error to="fail"/>
+    </action>
+    <kill name="fail">
+        <message>Workflow failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>

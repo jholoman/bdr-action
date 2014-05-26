@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
  * Created by jholoman on 5/23/14.
  */
 
-class ScheduleLauncher {
+public class ScheduleLauncher {
     private static final Logger log = Logger.getLogger(ScheduleLauncher.class);
 
 
