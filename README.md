@@ -1,10 +1,12 @@
 Introduction
 ===========
 This program allows for programmatic execution of previously scheduled BDR jobs. It has three basic functions:
-1) List BDR job schedule (and history). This is primarily in place to determine the schedule ID of the BDR job
+```
+1) List BDR job schedule (and history). This is primarily in place to determine the schedule ID of the BDR job.
 2) Run BDR job schedules. 
-3) Generate an encrypted properties file that contains the CM instance details and password. It is of course not 100% secure, but better than storing in clear text. 
-
+3) Generate an encrypted properties file that contains the CM instance details and password. 
+It is of course not 100% secure, but better than storing in clear text. 
+```
 Additionally, the utility operates in either local or distributed mode, specified via system property. The default mode is distributed. In distributed mode, every entry point must contain the path as part of the arguments list. The path refers to the HDFS location of the properties file, "bdr.properties". TODO work includes implementation of writing the properties file directly to HDFS. Currently this must be done manually.
 
 . 
@@ -29,8 +31,8 @@ Example:
 Options:
 ```
     logLevel               (default 'info')    The log level to use: debug, info, warn, error.
-    mode                   (default 'distributed')    The host on which CM is running.
-    filename               (default 'bdr.properties')    The user with which to connect to CM.
+    mode                   (default 'distributed')    The mode local or distributed.
+    filename               (default 'bdr.properties')    The filename to use.
     
 ```
 Command Arguments:
