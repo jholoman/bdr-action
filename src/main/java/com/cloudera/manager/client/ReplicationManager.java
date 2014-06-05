@@ -2,6 +2,7 @@ package com.cloudera.manager.client;
 
 import java.util.Properties;
 import java.util.List;
+import java.util.ArrayList;
 
 
 import com.cloudera.api.model.*;
@@ -12,6 +13,7 @@ import com.cloudera.api.ClouderaManagerClientBuilder;
 import com.cloudera.api.DataView;
 import com.cloudera.manager.client.util.CredentialsManager;
 import com.cloudera.manager.client.util.AESencryption;
+import org.mockito.internal.matchers.Null;
 
 /**
  * Created by jholoman on 5/23/14.
@@ -19,15 +21,10 @@ import com.cloudera.manager.client.util.AESencryption;
 class ReplicationManager {
 
     private static final Logger log = Logger.getLogger(ReplicationManager.class);
-    private static final String[] VALID_SERVICES = {"HDFS", "HIVE", "HIVE-1"};
+    private static final ArrayList<String> VALID_SERVICES = new ArrayList<String>();
 
-
-    private static <T> boolean contains(final T[] array, final T v) {
-        for (final T e : array)
-            if (e == v || v != null && v.equals(e))
-                return true;
-
-        return false;
+    static { VALID_SERVICES.add("HDFS");
+             VALID_SERVICES.add("HIVE");
     }
 
     private static ServicesResourceV4 getServicesResource() throws Exception {
@@ -70,18 +67,26 @@ class ReplicationManager {
 
         try {
             for (ApiService apiService : apiServiceList) {
-                if (contains(VALID_SERVICES, apiService.getType())) {
+                if (VALID_SERVICES.contains(apiService.getType())) {
                     log.info("Checking " + apiService.getType() + " for replication schedules");
                     ReplicationsResourceV4 reps = servicesResource.getReplicationsResource(apiService.getName());
                     try {
-                        ApiReplicationSchedule schedule = reps.readSchedule(scheduleId, DataView.FULL);
+                        ApiReplicationSchedule schedule = reps.readSchedule(scheduleId, DataView.SUMMARY);
 
                         log.info("Found replication schedule");
                         log.info("Executing replication schedule " + scheduleId + " with dryRun flag set to " + String.valueOf(dryRun));
                         log.info(schedule.getHdfsArguments().getSourcePath());
                         log.info(schedule.getHdfsArguments().getDestinationPath());
 
-                        ApiCommand command = reps.runSchedule(schedule.getId(), true);
+                        ApiCommand command = reps.runSchedule(schedule.getId(), dryRun);
+
+                        for(int i=1; i<10; i++){
+                            System.out.println("Count is: " + i);
+                            System.out.println(command.isActive());
+                            Thread.sleep(4000);
+                        }
+
+
 
                         log.info("Schedule started at " + command.getStartTime());
                         log.info("Exiting");
@@ -102,39 +107,48 @@ class ReplicationManager {
         }
     }
 
-    public static void ListSchedules() throws Exception {
+    public static void ListSchedules() throws Exception, NullPointerException {
         ServicesResourceV4 servicesResource = getServicesResource();
         List<ApiService> apiServiceList = servicesResource.readServices(DataView.EXPORT).getServices();
 
         for (ApiService apiService : apiServiceList) {
-            if (contains(VALID_SERVICES, apiService.getType())) {
+            if (VALID_SERVICES.contains(apiService.getType())) {
                 log.info("Checking " + apiService.getType() + " for replication schedules");
                 ReplicationsResourceV4 reps = servicesResource.getReplicationsResource(apiService.getName());
                 try {
 
-                    for (ApiReplicationSchedule schedule : reps.readSchedules(DataView.FULL)) {
-                        log.info("----------------------------------------------------------------------");
-                        log.info("Schedule ID:                 " + schedule.getId());
-                        log.info("Source Path:                 " + schedule.getHdfsArguments().getSourcePath());
-                        log.info("Dest   Path:                 " + schedule.getHdfsArguments().getDestinationPath());
-                        log.info("MR  Service:                 " + schedule.getHdfsArguments().getMapreduceServiceName());
-                        log.info("Pool       :                 " + schedule.getHdfsArguments().getSchedulerPoolName());
-                        log.info("# Mappers  :                 " + schedule.getHdfsArguments().getNumMaps());
-                        log.info("Bandwidth per Map:           " + schedule.getHdfsArguments().getBandwidthPerMap());
-                        log.info("User Name  :                 " + schedule.getHdfsArguments().getUserName());
+                    for (ApiReplicationSchedule schedule : reps.readSchedules(DataView.SUMMARY)) {
+                        if (schedule.getHdfsArguments() != null) {
+                            System.out.println(schedule);
+                            log.info("----------------------------------------------------------------------");
+                            log.info("Schedule ID:                 " + schedule.getId());
+                            log.info("Source Path:                 " + schedule.getHdfsArguments().getSourcePath());
+                            log.info("Dest   Path:                 " + schedule.getHdfsArguments().getDestinationPath());
+                            log.info("MR  Service:                 " + schedule.getHdfsArguments().getMapreduceServiceName());
+                            log.info("Pool       :                 " + schedule.getHdfsArguments().getSchedulerPoolName());
+                            log.info("# Mappers  :                 " + schedule.getHdfsArguments().getNumMaps());
+                            log.info("Bandwidth per Map:           " + schedule.getHdfsArguments().getBandwidthPerMap());
+                            log.info("User Name  :                 " + schedule.getHdfsArguments().getUserName());
 
-                        for (ApiReplicationCommand replicationCommand : schedule.getHistory()) {
-                            log.info("\t - - - - - - - - - - - - - - ");
-                            log.info("\tStart Time:                  " + replicationCommand.getStartTime());
-                            log.info("\tEnd Time  :                  " + replicationCommand.getEndTime());
-                            log.info("\tActive    :                  " + replicationCommand.isActive());
-                            log.info("\tSuccess   :                  " + replicationCommand.getSuccess().toString());
-                            log.info("\tPeer      :                  " + replicationCommand.getServiceRef().getPeerName());
+                            for (ApiReplicationCommand replicationCommand : schedule.getHistory()) {
+                                log.info("\t - - - - - - - - - - - - - - ");
+                                log.info("\tStart Time:                  " + replicationCommand.getStartTime());
+                                log.info("\tEnd Time  :                  " + replicationCommand.getEndTime());
+                                log.info("\tActive    :                  " + replicationCommand.isActive());
+                                log.info("\tSuccess   :                  " + replicationCommand.getSuccess().toString());
+                                log.info("\tPeer      :                  " + replicationCommand.getServiceRef().getPeerName());
+                            }
+                        } else if (schedule.getHiveArguments() != null ){
+                            log.info("----------------------------------------------------------------------");
+                            log.info("Schedule ID:                 " + schedule.getId());
+                            log.info("Export Dir Path:                 " + schedule.getHiveArguments().getExportDir());
+
                         }
                     }
                 } catch (Exception e) {
                     log.debug(e.getMessage());
                     e.printStackTrace();
+
                 }
             }
         }

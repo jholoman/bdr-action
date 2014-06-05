@@ -1,6 +1,7 @@
 package com.cloudera.manager.client.util;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import java.util.ArrayList;
 
 import java.util.Properties;
 /**
@@ -9,12 +10,12 @@ import java.util.Properties;
 public class BDRConfig {
     private static final Properties props = new Properties();
     private static final Logger log = Logger.getLogger(BDRConfig.class);
-    private static final String[] VALID_MODES = {"local", "distributed"};
-
+    private static final ArrayList<String> VALID_MODES = new ArrayList<String>();
     static {
         String LOG_LEVEL = System.getProperty("logLevel", "info");
         String RUN_MODE = System.getProperty("mode", "distributed");
-        if (!contains(VALID_MODES, RUN_MODE)) {
+
+        if (! (RUN_MODE.equals("local") || RUN_MODE.equals("distributed")) ) {
             log.warn("Mode selected is invalid; Setting to local mode.");
             RUN_MODE = "local";
         }
@@ -27,13 +28,7 @@ public class BDRConfig {
         log.getRootLogger().setLevel(Level.toLevel(LOG_LEVEL));
 
     }
-    private static <T> boolean contains(final T[] array, final T v) {
-        for (final T e : array)
-            if (e == v || v != null && v.equals(e))
-                return true;
 
-        return false;
-    }
     public static String getProperty(String key) {
         return props.getProperty(key);
     }
