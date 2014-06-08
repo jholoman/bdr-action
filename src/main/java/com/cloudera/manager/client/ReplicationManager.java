@@ -80,14 +80,6 @@ class ReplicationManager {
 
                         ApiCommand command = reps.runSchedule(schedule.getId(), dryRun);
 
-                        for(int i=1; i<10; i++){
-                            System.out.println("Count is: " + i);
-                            System.out.println(command.isActive());
-                            Thread.sleep(4000);
-                        }
-
-
-
                         log.info("Schedule started at " + command.getStartTime());
                         log.info("Exiting");
                         System.exit(0);
